@@ -41,7 +41,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   redOrb: {fileID: 21300000, guid: a976992a0b27e5b449ef0b25d44f8727, type: 3}
-  blueOrb: {fileID: 21300000, guid: 6fa19bc8ff832df4a93d781081f19559, type: 3}
+  blueOrb: {fileID: 21300000, guid: 9c631119090e54048acdba53ca517901, type: 3}
   lightOrb: {fileID: 21300000, guid: 124bd040a1eeda84296d78c931196768, type: 3}
   darkOrb: {fileID: 21300000, guid: f6773e34978a31943a126332fd7920b3, type: 3}
   greenOrb: {fileID: 21300000, guid: 6fa19bc8ff832df4a93d781081f19559, type: 3}

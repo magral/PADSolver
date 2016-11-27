@@ -44,34 +44,25 @@ public class ScrollImage : MonoBehaviour, IPointerClickHandler {
 	void Start()
 	{
 		orbSprites.Add(redOrb);
-		orbSprites.Add(blueOrb);
 		orbSprites.Add(lightOrb);
 		orbSprites.Add(darkOrb);
 		orbSprites.Add(greenOrb);
 		orbSprites.Add(healthOrb);
+		orbSprites.Add(blueOrb);
 	}
 
 	public void OnPointerClick(PointerEventData data)
 	{
-		Debug.Log("clicked");
 		NextImage();
-	}
-	void OnMouseDown()
-	{
-		Debug.Log("mouse down");
-		RaycastHit2D hit;
-		hit = Physics2D.Raycast(new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y), Vector2.zero, 0f);
-
-		if (hit.collider.gameObject == this.gameObject)
-		{
-			Debug.Log("hit");
-			NextImage();
-		}
 	}
 	
 	void NextImage()
 	{
 		index++;
+		if(index >= orbSprites.Count)
+		{
+			index = 0;
+		}
 		render.sprite = orbSprites[index];
 	}
 
