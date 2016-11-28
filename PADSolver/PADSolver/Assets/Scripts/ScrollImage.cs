@@ -5,12 +5,12 @@ using UnityEngine.UI;
 
 public enum OrbImage
 {
-	Red,
-	Green,
-	Blue,
-	Light,
-	Dark,
-	Health
+	Blue = 0,
+	Red = 1,
+	Light = 2,
+	Dark = 3,
+	Green = 4,
+	Health = 5
 }
 public class ScrollImage : MonoBehaviour, IPointerClickHandler {
 
@@ -35,25 +35,26 @@ public class ScrollImage : MonoBehaviour, IPointerClickHandler {
 
 	void Awake()
 	{
+		currentOrb = OrbImage.Blue;
 		render = GetComponent<Image>();
 		index = 0;
 		orbSprites = new List<Sprite>();
-		
 	}
 
 	void Start()
 	{
+		orbSprites.Add(blueOrb);
 		orbSprites.Add(redOrb);
 		orbSprites.Add(lightOrb);
 		orbSprites.Add(darkOrb);
 		orbSprites.Add(greenOrb);
 		orbSprites.Add(healthOrb);
-		orbSprites.Add(blueOrb);
 	}
 
 	public void OnPointerClick(PointerEventData data)
 	{
 		NextImage();
+		
 	}
 	
 	void NextImage()
@@ -63,6 +64,7 @@ public class ScrollImage : MonoBehaviour, IPointerClickHandler {
 		{
 			index = 0;
 		}
+		currentOrb = (OrbImage)index;
 		render.sprite = orbSprites[index];
 	}
 
