@@ -15,7 +15,7 @@ public enum OrbImage
 public class ScrollImage : MonoBehaviour, IPointerClickHandler {
 
 	[SerializeField]
-	private Sprite redOrb;
+	public Sprite redOrb;
 	[SerializeField]
 	private Sprite blueOrb;
 	[SerializeField]
@@ -32,6 +32,18 @@ public class ScrollImage : MonoBehaviour, IPointerClickHandler {
 	private List<Sprite> orbSprites;
 	private Image render;
 	private int index;
+
+	public OrbImage State
+	{
+		get { return currentOrb; }
+		set { currentOrb = value; }
+	}
+
+	public Sprite OrbSprite
+	{
+		get { return render.sprite; }
+		set { render.sprite = value; }
+	}
 
 	void Awake()
 	{
@@ -68,4 +80,31 @@ public class ScrollImage : MonoBehaviour, IPointerClickHandler {
 		render.sprite = orbSprites[index];
 	}
 
+	public void SetOrb(OrbImage newImage)
+	{
+		currentOrb = newImage;
+		switch (newImage)
+		{
+			case OrbImage.Red:
+				render.sprite = redOrb;
+				break;
+			case OrbImage.Blue:
+				render.sprite = blueOrb;
+				break;
+			case OrbImage.Light:
+				render.sprite = lightOrb;
+				break;
+			case OrbImage.Green:
+				render.sprite = greenOrb;
+				break;
+			case OrbImage.Health:
+				render.sprite = healthOrb;
+				break;
+			case OrbImage.Dark:
+				render.sprite = darkOrb;
+				break;
+			default:
+				throw new System.NotImplementedException();
+		}
+	}
 }
