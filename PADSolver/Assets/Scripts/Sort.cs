@@ -166,19 +166,20 @@ public class Sort : MonoBehaviour {
 
 		//Use a flood fill algorithm to create a "path" for the orbs to follow
 		int[,] boardCopy = CopyBoard(matchBoard);
-		int[] matches;
-		
-		for(int i = 0; i < ROW_LENGTH; i++)
+		List<Dictionary<string, int>> matches = new List<Dictionary<string, int>>();
+
+		for (int i = 0; i < ROW_LENGTH; i++)
 		{
-			for(int j = 0; j < COLUMN_LENGTH; j++)
+			for (int j = 0; j < COLUMN_LENGTH; j++)
 			{
 				current = boardCopy[i, j];
-				if(current == -1)
+				if (current == -1)
 				{
 					continue;
 				}
-				Dictionary<string, int> stack = MakeRowColumn(i, j);
-				int count = 0;
+				List<Dictionary<string, int>> stack = new List<Dictionary<string, int>>();
+				stack.Add(MakeRowColumn(i, j));
+				int fillPlacement = 0;
 				int[,] thisMatch = new int[,] {     { 0, 0, 0, 0, 0, 0 },
 													{ 0, 0, 0, 0, 0, 0 },
 													{ 0, 0, 0, 0, 0, 0 },
@@ -186,9 +187,41 @@ public class Sort : MonoBehaviour {
 													{ 0, 0, 0, 0, 0, 0 } };
 				while (stack.Count > 0)
 				{
-					//int n = stack.
+					Dictionary<string, int> lastRC = Pop(stack);
+					if (boardCopy[lastRC["Row"], lastRC["Col"]] != current) {
+						continue;
+					}
+					++fillPlacement;
+					boardCopy[lastRC["Row"], lastRC["Col"]] = -1;
+					thisMatch[lastRC["Row"], lastRC["Col"]] = 1;
+					
+					if (lastRC["Row"] > 0)
+					{
+						stack.Add(MakeRowColumn(lastRC["Row"] - 1, lastRC["Col"]));
+					}
+					if(lastRC["Row"] < ROW_LENGTH - 1)
+					{
+						stack.Add(MakeRowColumn(lastRC["Row"] + 1, lastRC["Col"]));
+					}
+					if(lastRC["Col"] > 0)
+					{
+						stack.Add(MakeRowColumn(lastRC["Row"], lastRC["Col"] - 1));
+					}
+					if(lastRC["Col"] < COLUMN_LENGTH - 1)
+					{
+						stack.Add(MakeRowColumn(lastRC["Row"], lastRC["COL"] + 1));
+					}
 				}
 
+				bool isRow = false;
+				for(int k = 0; k < ROW_LENGTH; k++)
+				{
+					if(thisMatch[k , 0] == 1 && thisMatch[k , 1] == 1 && thisMatch[k , 2] == 1 && thisMatch[k , 3] == 1 && thisMatch[k , 4] == 1 && thisMatch[k , 5] == 1)
+					{
+						isRow = true;
+					}
+				}
+				matches.Add(MakeMatch(current, fillPlacement, isRow));
 			}
 		}
 	}
@@ -223,7 +256,23 @@ public class Sort : MonoBehaviour {
 		}
 	}
 
-	public int[ , ] CreateEmptyBoard()
+	Dictionary<string, int> Pop(List<Dictionary<string,int>> list)
+	{
+		Dictionary<string, int> last = list[list.Count - 1];
+		list.RemoveAt(list.Count - 1);
+		return last; 
+	}
+
+	Dictionary<string, int> MakeMatch(int orb, int count, bool isRow)
+	{
+		Dictionary<string, int> match = new Dictionary<string, int>();
+		match.Add("Orb", orb);
+		match.Add("Count", count);
+		match.Add("isRow", isRow ? 1 : 0);
+
+		return match;
+	}
+	int[ , ] CreateEmptyBoard()
 	{
 		int[,] emptyBoard = new int[ROW_LENGTH, COLUMN_LENGTH ];
 		for(int i = 0; i < ROW_LENGTH; i++)
