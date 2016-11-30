@@ -237,7 +237,7 @@ public class Sort : MonoBehaviour {
 		return emptyBoard;
 	}
 
-	void SwitchOrb(OrbImage np2, OrbImage c, OrbImage n)
+	void SwitchOrb(int np2, int c, int n)
 	{
 		p1 = np2;
 		p2 = c;
