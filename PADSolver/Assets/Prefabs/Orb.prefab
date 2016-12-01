@@ -40,13 +40,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e785ceb8709984549a7d5962fbb41b9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  noOrb: {fileID: 21300000, guid: 08082e0df47ae9442802667c9c348cf6, type: 3}
   redOrb: {fileID: 21300000, guid: a976992a0b27e5b449ef0b25d44f8727, type: 3}
   blueOrb: {fileID: 21300000, guid: 9c631119090e54048acdba53ca517901, type: 3}
+  greenOrb: {fileID: 21300000, guid: 6fa19bc8ff832df4a93d781081f19559, type: 3}
   lightOrb: {fileID: 21300000, guid: 124bd040a1eeda84296d78c931196768, type: 3}
   darkOrb: {fileID: 21300000, guid: f6773e34978a31943a126332fd7920b3, type: 3}
-  greenOrb: {fileID: 21300000, guid: 6fa19bc8ff832df4a93d781081f19559, type: 3}
   healthOrb: {fileID: 21300000, guid: eb76b2990e4d6b14bb5bb090afcdbd2a, type: 3}
-  currentOrb: 2
+  currentOrb: 0
 --- !u!114 &114000011290918068
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -66,9 +67,9 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_Sprite: {fileID: 21300000, guid: 9c631119090e54048acdba53ca517901, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 08082e0df47ae9442802667c9c348cf6, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1

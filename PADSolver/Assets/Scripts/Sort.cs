@@ -230,6 +230,7 @@ public class Sort : MonoBehaviour {
 	{
 		return new Dictionary<string, int>() { { "row", row }, { "col", col} };
 	}
+
 	int[ , ] CopyBoard(int[ , ] copy)
 	{
 		int[,] copiedBoard = new int[ROW_LENGTH, COLUMN_LENGTH];
