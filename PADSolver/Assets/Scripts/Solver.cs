@@ -75,7 +75,7 @@ public class Solver : MonoBehaviour {
 	}
 
 	/* Constants and public variables */
-	public const int ORB_SIZE = 75;
+	public const int ORB_SIZE = 80;
 	public const float ORB_MULTIPLIER = 0.25f;
 	public const float COMBO_MULTIPLIER = 0.25f;
 	public const int MAX_NUM_SOLUTIONS = 30;
@@ -86,6 +86,7 @@ public class Solver : MonoBehaviour {
 	/* Private Variables */
 	private List<SolutionData> _solutions;
 	private OrbType[,] _board;
+	private OrbType[,] _initialBoard;
 	private float[] _orbWeights;
 	private int _rows = 5;
 	private int _cols = 6;
@@ -102,6 +103,31 @@ public class Solver : MonoBehaviour {
 
 	/* Private Functions */
 	/// <summary>
+	/// Updates internal representation of puzzle board
+	/// </summary>
+	void GetBoard()
+	{
+		for (int i = 0, r = 0; r < _rows; r++)
+			for (int c = 0; c < _cols; c++, i++)
+				_board[r, c] = root.GetChild(i).GetComponent<ScrollImage>().State;
+	}
+
+	/// <summary>
+	/// Checks if all orbs on the board are assigned
+	/// </summary>
+	bool CheckFilledBoard()
+	{
+		for (int r = 0; r < _rows; r++)
+			for (int c = 0; c < _cols; c++)
+				if (_board[r, c] == OrbType.None)
+				{
+					Debug.Log("Cannot have empty orbs when solving.");
+					return false;
+				}
+		return true;
+	}
+
+	/// <summary>
 	/// Creates an empty board
 	/// </summary>
 	OrbType[,] CreateEmptyBoard()
@@ -109,7 +135,7 @@ public class Solver : MonoBehaviour {
 		OrbType[,] rBoard = new OrbType[_rows, _cols];
 		for (int r = 0; r < _rows; r++)
 			for (int c = 0; c < _cols; c++)
-				rBoard[r, c] = OrbType.None;
+				rBoard[r, c] = OrbType.Undefined;
 		return rBoard;
 	}
 
@@ -143,11 +169,11 @@ public class Solver : MonoBehaviour {
 		}
 
 		//Check for Vertical Matches
-		for (int i = 0; i < _cols; i++)
+		for (int j = 0; j < _cols; j++)
 		{
 			OrbType previousOrb1 = OrbType.None;
 			OrbType previousOrb2 = OrbType.None;
-			for (int j = 0; j < _rows; j++)
+			for (int i = 0; i < _rows; i++)
 			{
 				OrbType currentOrb = solution.solutionBoard[i, j];
 				//If there is a vertical match of 3 orbs, add the orbs to the match board
@@ -175,11 +201,6 @@ public class Solver : MonoBehaviour {
 				List<Coords> stack = new List<Coords>();
 				stack.Add(new Coords(i, j));
 				int numOrbs = 0;
-				int[,] thisMatch = new int[,] { { 0, 0, 0, 0, 0, 0 },
-												{ 0, 0, 0, 0, 0, 0 },
-												{ 0, 0, 0, 0, 0, 0 },
-												{ 0, 0, 0, 0, 0, 0 },
-												{ 0, 0, 0, 0, 0, 0 } };
 				while (stack.Count > 0)
 				{
 					Coords lastRC = stack[stack.Count - 1];
@@ -187,7 +208,6 @@ public class Solver : MonoBehaviour {
 					if (boardCopy[lastRC.row, lastRC.col] != currentOrb) { continue; }
 					numOrbs++;
 					boardCopy[lastRC.row, lastRC.col] = OrbType.Undefined;
-					thisMatch[lastRC.row, lastRC.col] = 1;
 					if (lastRC.row > 0) { stack.Add(new Coords(lastRC.row - 1, lastRC.col)); }
 					if (lastRC.row < _rows - 1) { stack.Add(new Coords(lastRC.row + 1, lastRC.col)); }
 					if (lastRC.col > 0) { stack.Add(new Coords(lastRC.row, lastRC.col - 1)); }
@@ -354,6 +374,9 @@ public class Solver : MonoBehaviour {
 	/// </summary>
 	public void SolveBoard()
 	{
+		GetBoard();
+		if (!CheckFilledBoard()) { return; }
+		_initialBoard = _board;
 		SolutionData baseSolution = new SolutionData(_board);
 		baseSolution = EvaluateSolution(baseSolution);
 		for (int i = 0, r = 0; r < _rows; r++)
@@ -366,17 +389,43 @@ public class Solver : MonoBehaviour {
 		}
 	}
 
-	public void UpdateBoard()
+	/// <summary>
+	/// Randomizes the orbs on the board
+	/// </summary>
+	public void RandomizeBoard()
 	{
-		for (int r = 0; r < _rows; r++)
+		do
 		{
-			for (int c = 0; c < _cols; c++)
+			for (int i = 0, r = 0; r < _rows; r++)
+				for (int c = 0; c < _cols; c++, i++)
+				{
+					OrbType randomOrb = (OrbType)Random.Range(1, 7);
+					root.GetChild(i).GetComponent<ScrollImage>().SetOrb(randomOrb);
+					_board[r, c] = randomOrb;
+				}
+			/*
+			// DEBUG
+			string output = "matches = [ ";
+			foreach(MatchData match in FindMatches(new SolutionData(_board)).matches)
 			{
-				int boardIndex = r * _rows + c;
-				_board[r, c] = root.GetChild(boardIndex).GetComponent<ScrollImage>().State;
+				output += "(" + match.orbType.ToString() + ", " + match.numOrbs.ToString() + ") ";
 			}
-		}
+			output += "]";
+			Debug.Log(output);
+			*/
+		} while (FindMatches(new SolutionData(_board)).matches.Count != 0);
 	}
 
-
+	/// <summary>
+	/// Resets the orbs on the board to be unknown
+	/// </summary>
+	public void ClearBoard()
+	{
+		for (int i = 0, r = 0; r < _rows; r++)
+			for (int c = 0; c < _cols; c++, i++)
+			{
+				root.GetChild(i).GetComponent<ScrollImage>().SetOrb(OrbType.None);
+				_board[r, c] = OrbType.None;
+			}
+	}
 }
