@@ -80,6 +80,9 @@ public class Solver : MonoBehaviour {
 	public const float COMBO_MULTIPLIER = 0.25f;
 	public const int MAX_NUM_SOLUTIONS = 30;
 
+	[SerializeField]
+	private Transform root;
+
 	/* Private Variables */
 	private List<SolutionData> _solutions;
 	private OrbType[,] _board;
@@ -303,6 +306,9 @@ public class Solver : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// Swaps the two orbs after moving in given direction
+	/// </summary>
 	SolutionData SwapOrbs(SolutionData solution, int dir)
 	{
 		Coords oldCursorPos = new Coords(solution.currentCursorPos);
@@ -343,6 +349,9 @@ public class Solver : MonoBehaviour {
 	}
 
 	/* Public Functions */
+	/// <summary>
+	/// Main function that runs search algorithm for solutions
+	/// </summary>
 	public void SolveBoard()
 	{
 		SolutionData baseSolution = new SolutionData(_board);
@@ -357,7 +366,17 @@ public class Solver : MonoBehaviour {
 		}
 	}
 
-	
+	public void UpdateBoard()
+	{
+		for (int r = 0; r < _rows; r++)
+		{
+			for (int c = 0; c < _cols; c++)
+			{
+				int boardIndex = r * _rows + c;
+				_board[r, c] = root.GetChild(boardIndex).GetComponent<ScrollImage>().State;
+			}
+		}
+	}
 
 
 }
