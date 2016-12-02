@@ -85,6 +85,7 @@ public class Solver : MonoBehaviour {
 
 	/* Private Variables */
 	private List<SolutionData> _solutions;
+	private SolutionData _selectedSolution;
 	private OrbType[,] _board;
 	private OrbType[,] _initialBoard;
 	private float[] _orbWeights;
@@ -109,7 +110,10 @@ public class Solver : MonoBehaviour {
 	{
 		for (int i = 0, r = 0; r < _rows; r++)
 			for (int c = 0; c < _cols; c++, i++)
+			{
 				_board[r, c] = root.GetChild(i).GetComponent<ScrollImage>().State;
+				//Debug.Log(i + ":" + _board[r, c]);
+			}
 	}
 
 	/// <summary>
@@ -121,7 +125,7 @@ public class Solver : MonoBehaviour {
 			for (int c = 0; c < _cols; c++)
 				if (_board[r, c] == OrbType.None)
 				{
-					Debug.Log("Cannot have empty orbs when solving.");
+					Debug.Log("Cannot have empty orbs when solving. (Empty Orb located at [" + r + ", " + c + "])");
 					return false;
 				}
 		return true;
@@ -368,6 +372,16 @@ public class Solver : MonoBehaviour {
 		return _solutions.GetRange(0, MAX_NUM_SOLUTIONS); 
 	}
 
+	/// <summary>
+	/// Shows the board on the front-end side
+	/// </summary>
+	void ShowBoard()
+	{
+		for (int i = 0, r = 0; r < _rows; r++)
+			for (int c = 0; c < _cols; c++, i++)
+				root.GetChild(i).GetComponent<ScrollImage>().SetOrb(_board[r,c]);
+	}
+
 	/* Public Functions */
 	/// <summary>
 	/// Main function that runs search algorithm for solutions
@@ -375,18 +389,42 @@ public class Solver : MonoBehaviour {
 	public void SolveBoard()
 	{
 		GetBoard();
+		/* DEBUG
+		string outputBoard = "_board = [ ";
+		for (int r = 0; r < _rows; r++)
+		{
+			outputBoard += "[ ";
+			for (int c = 0; c < _cols; c++)
+			{
+				outputBoard += _board[r, c] + " ";
+			}
+			outputBoard += "] ";
+		}
+		outputBoard += "]";
+		Debug.Log(outputBoard);
+		// END DEBUG */
 		if (!CheckFilledBoard()) { return; }
-		_initialBoard = _board;
+		_initialBoard = (OrbType[,])_board.Clone();
 		SolutionData baseSolution = new SolutionData(_board);
 		baseSolution = EvaluateSolution(baseSolution);
-		for (int i = 0, r = 0; r < _rows; r++)
-			for (int c = 0; c < _cols; c++, i++)
-				_solutions[i] = MakeSolutionWithCursor(baseSolution, r, c);
+		for (int r = 0; r < _rows; r++)
+			for (int c = 0; c < _cols; c++)
+				_solutions.Add(MakeSolutionWithCursor(baseSolution, r, c));
 		while(_step < _maxLength)
 		{
 			_step++;
 			_solutions = StepSolutions();
 		}
+		_selectedSolution = _solutions[0];
+		// /* DEBUG
+		string output = "matches = [ ";
+		foreach (MatchData match in _selectedSolution.matches)
+		{
+			output += "(" + match.orbType.ToString() + ", " + match.numOrbs.ToString() + ") ";
+		}
+		output += "]";
+		Debug.Log(output);
+		// END DEBUG */
 	}
 
 	/// <summary>
@@ -427,5 +465,28 @@ public class Solver : MonoBehaviour {
 				root.GetChild(i).GetComponent<ScrollImage>().SetOrb(OrbType.None);
 				_board[r, c] = OrbType.None;
 			}
+	}
+
+	/// <summary>
+	/// Resets the board to its inital state
+	/// </summary>
+	public void ResetBoard()
+	{
+		for (int i = 0, r = 0; r < _rows; r++)
+			for (int c = 0; c < _cols; c++, i++)
+			{
+				OrbType oldOrb = _initialBoard[r, c];
+				root.GetChild(i).GetComponent<ScrollImage>().SetOrb(oldOrb);
+				_board[r, c] = oldOrb;
+			}
+	}
+
+	/// <summary>
+	/// Shows the solution board
+	/// </summary>
+	public void ShowFinalBoard()
+	{
+		_board = (OrbType[,])_selectedSolution.solutionBoard.Clone();
+		ShowBoard();
 	}
 }
