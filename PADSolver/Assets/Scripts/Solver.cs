@@ -74,7 +74,9 @@ public class Solver : MonoBehaviour {
 		}
 	}
 
+	//---------------------------------/
 	/* Constants and public variables */
+	//---------------------------------/
 	public const int ORB_SIZE = 80;
 	public const float ORB_MULTIPLIER = 0.25f;
 	public const float COMBO_MULTIPLIER = 0.25f;
@@ -83,7 +85,9 @@ public class Solver : MonoBehaviour {
 	[SerializeField]
 	private Transform root;
 
+	//--------------------/
 	/* Private Variables */
+	//--------------------/
 	private List<SolutionData> _solutions;
 	private SolutionData _selectedSolution;
 	private OrbType[,] _board;
@@ -92,17 +96,41 @@ public class Solver : MonoBehaviour {
 	private int _rows = 5;
 	private int _cols = 6;
 	private int _maxLength = 25;
-	private int _step = 0;
 
+	//-----------------/
 	/* Initialization */
+	//-----------------/
 	void Awake()
 	{
 		_solutions = new List<SolutionData>();
 		_board = new OrbType[_rows, _cols];
-		_orbWeights = new float[6];
+		_initialBoard = new OrbType[_rows, _cols];
+		_orbWeights = new float[6] { 1, 1, 1, 1, 1, 0.3f };
 	}
 
+	//----------------------/
+	/* Debugging Functions */
+	//----------------------/
+
+	void PrintBoard(OrbType[,] board, string name)
+	{
+		string output = name + " = [ ";
+		for (int r = 0; r < _rows; r++)
+		{
+			output += "[ ";
+			for (int c = 0; c < _cols; c++)
+			{
+				output += board[r, c] + " ";
+			}
+			output += "] ";
+		}
+		output += "]";
+		Debug.Log(output);
+	}
+
+	//--------------------/
 	/* Private Functions */
+	//--------------------/
 	/// <summary>
 	/// Updates internal representation of puzzle board
 	/// </summary>
@@ -110,10 +138,7 @@ public class Solver : MonoBehaviour {
 	{
 		for (int i = 0, r = 0; r < _rows; r++)
 			for (int c = 0; c < _cols; c++, i++)
-			{
 				_board[r, c] = root.GetChild(i).GetComponent<ScrollImage>().State;
-				//Debug.Log(i + ":" + _board[r, c]);
-			}
 	}
 
 	/// <summary>
@@ -146,7 +171,7 @@ public class Solver : MonoBehaviour {
 	/// <summary>
 	/// Finds and collects all matches on the given board and saves them into a solution data object
 	/// </summary>
-	SolutionData FindMatches(SolutionData solution)
+	SolutionData FindMatches(OrbType[,] board)
 	{
 		//Create board for only the matches
 		OrbType[,] matchesBoard = CreateEmptyBoard();
@@ -158,7 +183,7 @@ public class Solver : MonoBehaviour {
 			OrbType previousOrb2 = OrbType.None;
 			for (int j = 0; j < _cols; j++)
 			{
-				OrbType currentOrb = solution.solutionBoard[i, j];
+				OrbType currentOrb = board[i, j];
 				//If there is a horizontal match of 3 orbs, add the orbs to the match board
 				if (previousOrb1 == previousOrb2 && previousOrb2 == currentOrb && currentOrb != OrbType.None)
 				{
@@ -179,7 +204,7 @@ public class Solver : MonoBehaviour {
 			OrbType previousOrb2 = OrbType.None;
 			for (int i = 0; i < _rows; i++)
 			{
-				OrbType currentOrb = solution.solutionBoard[i, j];
+				OrbType currentOrb = board[i, j];
 				//If there is a vertical match of 3 orbs, add the orbs to the match board
 				if (previousOrb1 == previousOrb2 && previousOrb2 == currentOrb && currentOrb != OrbType.None)
 				{
@@ -257,7 +282,7 @@ public class Solver : MonoBehaviour {
 	{
 		for (int r = 0; r < _rows; r++)
 			for (int c = 0; c < _cols; c++)
-				if (matchesBoard[r, c] == OrbType.Undefined)
+				if (matchesBoard[r, c] != OrbType.Undefined)
 					currentBoard[r, c] = OrbType.None;
 		currentBoard = DropRemainingOrbs(currentBoard);
 		return currentBoard;
@@ -271,7 +296,7 @@ public class Solver : MonoBehaviour {
 		float totalWeight = 0;
 		foreach (MatchData match in matches)
 		{
-			float weight = _orbWeights[(int)match.orbType];
+			float weight = _orbWeights[(int)match.orbType - 1];
 			float orbBonus = (match.numOrbs - 3) * ORB_MULTIPLIER + 1f;
 			totalWeight += weight * orbBonus;
 		}
@@ -286,14 +311,18 @@ public class Solver : MonoBehaviour {
 	{
 		OrbType[,] currBoard = (OrbType[,])solution.solutionBoard.Clone();
 		List<MatchData> allMatches = new List<MatchData>();
-		while(true)
+		do
 		{
-			SolutionData matchesBoardData = FindMatches(solution);
+			SolutionData matchesBoardData = FindMatches(currBoard);
 			List<MatchData> foundMatches = matchesBoardData.matches;
+			//Debug.Log("# of Matches = " + foundMatches.Count);
 			if (foundMatches.Count <= 0) { break; }
-			currBoard = RemoveMatches(currBoard,matchesBoardData.solutionBoard);
+			//PrintBoard(currBoard, "currBoard(before)");
+			//PrintBoard(matchesBoardData.solutionBoard, "matchesBoard");
+			currBoard = RemoveMatches(currBoard, matchesBoardData.solutionBoard);
+			//PrintBoard(currBoard, "currBoard");
 			allMatches.AddRange(matchesBoardData.matches);
-		}
+		} while (true);
 		solution.totalWeight = ComputeTotalWeight(allMatches);
 		solution.matches = allMatches;
 		return solution;
@@ -346,6 +375,7 @@ public class Solver : MonoBehaviour {
 		OrbType orbTemp = solution.solutionBoard[oldCursorPos.row, oldCursorPos.col];
 		solution.solutionBoard[oldCursorPos.row, oldCursorPos.col] = solution.solutionBoard[solution.currentCursorPos.row, solution.currentCursorPos.col];
 		solution.solutionBoard[solution.currentCursorPos.row, solution.currentCursorPos.col] = orbTemp;
+		solution.path.Add(dir);
 		return solution;
 	}
 
@@ -382,7 +412,9 @@ public class Solver : MonoBehaviour {
 				root.GetChild(i).GetComponent<ScrollImage>().SetOrb(_board[r,c]);
 	}
 
+	//-------------------/
 	/* Public Functions */
+	//-------------------/
 	/// <summary>
 	/// Main function that runs search algorithm for solutions
 	/// </summary>
@@ -390,41 +422,38 @@ public class Solver : MonoBehaviour {
 	{
 		GetBoard();
 		/* DEBUG
-		string outputBoard = "_board = [ ";
-		for (int r = 0; r < _rows; r++)
-		{
-			outputBoard += "[ ";
-			for (int c = 0; c < _cols; c++)
-			{
-				outputBoard += _board[r, c] + " ";
-			}
-			outputBoard += "] ";
-		}
-		outputBoard += "]";
-		Debug.Log(outputBoard);
+		PrintBoard(_board, "board");
 		// END DEBUG */
 		if (!CheckFilledBoard()) { return; }
 		_initialBoard = (OrbType[,])_board.Clone();
+		_solutions.Clear();
+		/* DEBUG
+		PrintBoard(_initialBoard, "initialBoard");
+		// END DEBUG */
 		SolutionData baseSolution = new SolutionData(_board);
 		baseSolution = EvaluateSolution(baseSolution);
+		//Debug.Log(baseSolution.totalWeight);
 		for (int r = 0; r < _rows; r++)
 			for (int c = 0; c < _cols; c++)
 				_solutions.Add(MakeSolutionWithCursor(baseSolution, r, c));
-		while(_step < _maxLength)
+		int step = 0;
+		while (step < _maxLength)
 		{
-			_step++;
+			step++;
+			Debug.Log(step);
 			_solutions = StepSolutions();
 		}
 		_selectedSolution = _solutions[0];
-		// /* DEBUG
-		string output = "matches = [ ";
-		foreach (MatchData match in _selectedSolution.matches)
-		{
-			output += "(" + match.orbType.ToString() + ", " + match.numOrbs.ToString() + ") ";
-		}
-		output += "]";
-		Debug.Log(output);
-		// END DEBUG */
+		Debug.Log("Top Solution: W = " + _selectedSolution.totalWeight + ", L = " + _selectedSolution.path.Count);
+		/* DEBUG
+	   string output = "matches = [ ";
+	   foreach (MatchData match in _selectedSolution.matches)
+	   {
+		   output += "(" + match.orbType.ToString() + ", " + match.numOrbs.ToString() + ") ";
+	   }
+	   output += "]";
+	   Debug.Log(output);
+	   // END DEBUG */
 	}
 
 	/// <summary>
@@ -440,18 +469,9 @@ public class Solver : MonoBehaviour {
 					OrbType randomOrb = (OrbType)Random.Range(1, 7);
 					root.GetChild(i).GetComponent<ScrollImage>().SetOrb(randomOrb);
 					_board[r, c] = randomOrb;
+					_initialBoard[r, c] = randomOrb;
 				}
-			/*
-			// DEBUG
-			string output = "matches = [ ";
-			foreach(MatchData match in FindMatches(new SolutionData(_board)).matches)
-			{
-				output += "(" + match.orbType.ToString() + ", " + match.numOrbs.ToString() + ") ";
-			}
-			output += "]";
-			Debug.Log(output);
-			*/
-		} while (FindMatches(new SolutionData(_board)).matches.Count != 0);
+		} while (FindMatches(_board).matches.Count != 0);
 	}
 
 	/// <summary>
@@ -487,6 +507,26 @@ public class Solver : MonoBehaviour {
 	public void ShowFinalBoard()
 	{
 		_board = (OrbType[,])_selectedSolution.solutionBoard.Clone();
+		ShowBoard();
+	}
+
+	/// <summary>
+	/// Remove the matcheso n the current board and drop the remaining orbs
+	/// </summary>
+	public void DropMatches()
+	{
+		GetBoard();
+		OrbType[,] currBoard = (OrbType[,])_board.Clone();
+		do
+		{
+			SolutionData matchesBoardData = FindMatches(currBoard);
+			List<MatchData> foundMatches = matchesBoardData.matches;
+			if (foundMatches.Count <= 0) { break; }
+			currBoard = RemoveMatches(currBoard, matchesBoardData.solutionBoard);
+		} while (true);
+		for (int r = 0; r < _rows; r++)
+			for (int c =0; c < _cols; c++)
+				_board = (OrbType[,])currBoard.Clone();
 		ShowBoard();
 	}
 }
