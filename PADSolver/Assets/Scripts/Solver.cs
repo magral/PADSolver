@@ -1,6 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
+public enum Direction
+{
+	Right,
+	Down,
+	Left,
+	Up
+}
+
 public class Solver : MonoBehaviour {
 
 	/* Coordinate class - holds row and column information */
@@ -19,41 +27,17 @@ public class Solver : MonoBehaviour {
 			row = coord.row;
 			col = coord.col;
 		}
+
+		public bool Equals(Coords other)
+		{
+			return (row == other.row && col == other.col);
+		}
+
+		override public string ToString()
+		{
+			 return "(" + row + ", " + col + ")";
+		}
 	}
-
-	/* Solution Data class - holds relevant data for each solution */
-	public class SolutionData
-	{
-		public OrbType[,] solutionBoard;
-		public Coords currentCursorPos;
-		public Coords startOrbPos;
-		public float totalWeight;
-		public List<int> path;
-		public List<MatchData> matches;
-		public bool isChecked;
-
-		public SolutionData(OrbType[,] board)
-		{
-			solutionBoard = (OrbType[,])board.Clone();
-			currentCursorPos = new Coords(0,0);
-			startOrbPos = new Coords(0,0);
-			totalWeight = 0;
-			path = new List<int>();
-			matches = new List<MatchData>();
-			isChecked = false;
-		}
-
-		public SolutionData(SolutionData solution)
-		{
-			solutionBoard = (OrbType[,])solution.solutionBoard.Clone();
-			currentCursorPos = new Coords(solution.currentCursorPos);
-			startOrbPos = new Coords(solution.startOrbPos);
-			totalWeight = solution.totalWeight;
-			path = solution.path;
-			matches = solution.matches;
-			isChecked = solution.isChecked;
-		}
-	};
 
 	/* Match Data class - holds relevant data about a match */
 	public class MatchData
@@ -72,7 +56,67 @@ public class Solver : MonoBehaviour {
 			orbType = match.orbType;
 			numOrbs = match.numOrbs;
 		}
+
+		public bool Equals(MatchData other)
+		{
+			return (orbType == other.orbType && numOrbs == other.numOrbs);
+		}
 	}
+
+	/* Solution Data class - holds relevant data for each solution */
+	public class SolutionData : System.IComparable<SolutionData>
+	{
+		public OrbType[,] solutionBoard;
+		public Coords currentCursorPos;
+		public Coords startOrbPos;
+		public float totalWeight;
+		public List<Direction> path;
+		public List<MatchData> matches;
+		public bool isChecked;
+
+		public SolutionData(OrbType[,] board)
+		{
+			solutionBoard = (OrbType[,])board.Clone();
+			currentCursorPos = new Coords(0,0);
+			startOrbPos = new Coords(0,0);
+			totalWeight = 0;
+			path = new List<Direction>();
+			matches = new List<MatchData>();
+			isChecked = false;
+		}
+
+		public SolutionData(SolutionData solution)
+		{
+			solutionBoard = (OrbType[,])solution.solutionBoard.Clone();
+			currentCursorPos = new Coords(solution.currentCursorPos);
+			startOrbPos = new Coords(solution.startOrbPos);
+			totalWeight = solution.totalWeight;
+			path = new List<Direction>(solution.path);
+			matches = new List<MatchData>(solution.matches);
+			isChecked = solution.isChecked;
+		}
+
+		public int CompareTo(SolutionData other)
+		{
+			return (int)((other.totalWeight - totalWeight)*1000);
+		}
+
+		public bool Equals(SolutionData other)
+		{
+			if (!startOrbPos.Equals(other.startOrbPos)) { return false; }
+			if (matches.Count != other.matches.Count) { return false; }
+			for (int i = 0; i < matches.Count; i++)
+			{
+				if (!matches[i].Equals(other.matches[i])) { return false; }
+			}
+			return true;
+		}
+
+		override public string ToString()
+		{
+			return "(W = " + totalWeight + ", M = " + matches.Count + ", S = " + startOrbPos.ToString() + ", P = " + path.Count + ")\n";
+		}
+	};
 
 	//---------------------------------/
 	/* Constants and public variables */
@@ -80,7 +124,7 @@ public class Solver : MonoBehaviour {
 	public const int ORB_SIZE = 80;
 	public const float ORB_MULTIPLIER = 0.25f;
 	public const float COMBO_MULTIPLIER = 0.25f;
-	public const int MAX_NUM_SOLUTIONS = 30;
+	public const int MAX_NUM_SOLUTIONS = 5 * 6 *4;
 
 	[SerializeField]
 	private Transform root;
@@ -95,7 +139,7 @@ public class Solver : MonoBehaviour {
 	private float[] _orbWeights;
 	private int _rows = 5;
 	private int _cols = 6;
-	private int _maxLength = 25;
+	private int _maxLength = 40000;
 
 	//-----------------/
 	/* Initialization */
@@ -126,6 +170,28 @@ public class Solver : MonoBehaviour {
 		}
 		output += "]";
 		Debug.Log(output);
+	}
+
+	void PrintSolutions(List<SolutionData> solutions, string name)
+	{
+		string solutionsOutput = name + "(" + solutions.Count + ") = [ ";
+		foreach (SolutionData solution in solutions)
+		{
+			solutionsOutput += solution.ToString();
+		}
+		solutionsOutput += "]";
+		Debug.Log(solutionsOutput);
+	}
+
+	string PathToString(List<Direction> path)
+	{
+		string output = "( ";
+		foreach (Direction dir in path)
+		{
+			output += dir.ToString() + " ";
+		}
+		output += ")";
+		return output;
 	}
 
 	//--------------------/
@@ -315,12 +381,8 @@ public class Solver : MonoBehaviour {
 		{
 			SolutionData matchesBoardData = FindMatches(currBoard);
 			List<MatchData> foundMatches = matchesBoardData.matches;
-			//Debug.Log("# of Matches = " + foundMatches.Count);
 			if (foundMatches.Count <= 0) { break; }
-			//PrintBoard(currBoard, "currBoard(before)");
-			//PrintBoard(matchesBoardData.solutionBoard, "matchesBoard");
 			currBoard = RemoveMatches(currBoard, matchesBoardData.solutionBoard);
-			//PrintBoard(currBoard, "currBoard");
 			allMatches.AddRange(matchesBoardData.matches);
 		} while (true);
 		solution.totalWeight = ComputeTotalWeight(allMatches);
@@ -342,18 +404,18 @@ public class Solver : MonoBehaviour {
 	/// <summary>
 	/// Checks if the current orb can be move in given direction 
 	/// </summary>
-	bool CanMoveOrb(SolutionData solution, int dir)
+	bool CanMoveOrb(SolutionData solution, Direction dir)
 	{
-		if (solution.path.Count > 0 && solution.path[solution.path.Count-1] == (dir + 2) % 4) { return false; }
+		if (solution.path.Count > 0 && (int)solution.path[solution.path.Count-1] == ((int)dir + 2) % 4) { return false; }
 		else
 		{
 
 			switch(dir)
 			{
-				case 0: return solution.currentCursorPos.col < _cols - 1;	//Down
-				case 1: return solution.currentCursorPos.row < _rows - 1;	//Right
-				case 2: return solution.currentCursorPos.col > 0;			//Up
-				case 3: return solution.currentCursorPos.row > 0;           //Left
+				case Direction.Right: return solution.currentCursorPos.col < _cols - 1;	
+				case Direction.Down: return solution.currentCursorPos.row < _rows - 1;	
+				case Direction.Left: return solution.currentCursorPos.col > 0;			
+				case Direction.Up: return solution.currentCursorPos.row > 0;          
 				default: return false;
 			}
 		}
@@ -362,15 +424,15 @@ public class Solver : MonoBehaviour {
 	/// <summary>
 	/// Swaps the two orbs after moving in given direction
 	/// </summary>
-	SolutionData SwapOrbs(SolutionData solution, int dir)
+	SolutionData SwapOrbs(SolutionData solution, Direction dir)
 	{
 		Coords oldCursorPos = new Coords(solution.currentCursorPos);
 		switch(dir)
 		{
-			case 0: solution.currentCursorPos.col++; break;
-			case 1: solution.currentCursorPos.row++; break;
-			case 2: solution.currentCursorPos.col--; break;
-			case 3: solution.currentCursorPos.row--; break;
+			case Direction.Right: solution.currentCursorPos.col++; break;
+			case Direction.Down: solution.currentCursorPos.row++; break;
+			case Direction.Left: solution.currentCursorPos.col--; break;
+			case Direction.Up: solution.currentCursorPos.row--; break;
 		}
 		OrbType orbTemp = solution.solutionBoard[oldCursorPos.row, oldCursorPos.col];
 		solution.solutionBoard[oldCursorPos.row, oldCursorPos.col] = solution.solutionBoard[solution.currentCursorPos.row, solution.currentCursorPos.col];
@@ -390,15 +452,15 @@ public class Solver : MonoBehaviour {
 			if (solution.isChecked) { break; }
 			for (int dir = 0; dir < 4; dir++)
 			{
-				if(!CanMoveOrb(solution,dir)) { continue; }
+				if(!CanMoveOrb(solution,(Direction)dir)) { continue; }
 				SolutionData newSolution = new SolutionData(solution);
-				newSolution = EvaluateSolution(SwapOrbs(newSolution, dir));
-				newSolutions.Add(newSolution);
+				newSolution = EvaluateSolution(SwapOrbs(newSolution, (Direction)dir));
+				newSolutions.Add(new SolutionData(newSolution));
 			}
 			solution.isChecked = true;
 		}
 		_solutions.AddRange(newSolutions);
-		_solutions.Sort((a, b) => (int)(b.totalWeight - a.totalWeight));
+		_solutions.Sort();
 		return _solutions.GetRange(0, MAX_NUM_SOLUTIONS); 
 	}
 
@@ -412,6 +474,69 @@ public class Solver : MonoBehaviour {
 				root.GetChild(i).GetComponent<ScrollImage>().SetOrb(_board[r,c]);
 	}
 
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="solutions"></param>
+	/// <returns></returns>
+	List<SolutionData> SimplifySolutions(List<SolutionData> solutions)
+	{
+		List<SolutionData> simplifiedSolutions = new List<SolutionData>();
+		foreach (SolutionData solution in solutions)
+		{
+			bool found = false;
+			foreach (SolutionData simplifiedSolution in simplifiedSolutions)
+			{
+				if (solution.Equals(simplifiedSolution))
+				{
+					found = true;
+					break;
+				}
+			}
+			if (found) { continue; }
+			else { simplifiedSolutions.Add(solution); }
+		}
+		return simplifiedSolutions;
+	}
+
+	List<Direction> SimplifyPath(List<Direction> path, Coords startOrbPos)
+	{
+		List<Coords> path_rc = new List<Coords>();
+		path_rc.Add(new Coords(startOrbPos));
+		foreach (Direction dir in path)
+		{
+			switch (dir)
+			{
+				case Direction.Right: startOrbPos.col++; break;
+				case Direction.Down: startOrbPos.row++; break;
+				case Direction.Left: startOrbPos.col--; break;
+				case Direction.Up: startOrbPos.row--; break;
+			}
+			path_rc.Add(new Coords(startOrbPos));
+		}
+		//* DEBUG
+		string output = "path = [ ";
+		foreach (Coords rc in path_rc)
+		{
+			output += rc.ToString() + " ";
+		}
+		output += "]";
+		Debug.Log(output);
+		List<Direction> simplifiedPath = new List<Direction>();
+		for (int i = 1; i < path.Count - 1; i++)
+		{
+			int dx_1 = path_rc[i].row - path_rc[i - 1].row;
+			int dx_2 = path_rc[i + 1].row - path_rc[i].row;
+			if (dx_1 == dx_2)
+			{
+				int dy_1 = path_rc[i].col - path_rc[i - 1].col;
+				int dy_2 = path_rc[i + 1].col - path_rc[i].col;
+				if (dy_1 == dy_2) { continue; } }
+			simplifiedPath.Add(path[i]);
+		}
+		return simplifiedPath;
+	}  
+
 	//-------------------/
 	/* Public Functions */
 	//-------------------/
@@ -421,18 +546,11 @@ public class Solver : MonoBehaviour {
 	public void SolveBoard()
 	{
 		GetBoard();
-		/* DEBUG
-		PrintBoard(_board, "board");
-		// END DEBUG */
 		if (!CheckFilledBoard()) { return; }
 		_initialBoard = (OrbType[,])_board.Clone();
 		_solutions.Clear();
-		/* DEBUG
-		PrintBoard(_initialBoard, "initialBoard");
-		// END DEBUG */
 		SolutionData baseSolution = new SolutionData(_board);
 		baseSolution = EvaluateSolution(baseSolution);
-		//Debug.Log(baseSolution.totalWeight);
 		for (int r = 0; r < _rows; r++)
 			for (int c = 0; c < _cols; c++)
 				_solutions.Add(MakeSolutionWithCursor(baseSolution, r, c));
@@ -440,20 +558,28 @@ public class Solver : MonoBehaviour {
 		while (step < _maxLength)
 		{
 			step++;
-			Debug.Log(step);
 			_solutions = StepSolutions();
 		}
+		_solutions = SimplifySolutions(_solutions);
+		///* DEBUG
+		PrintSolutions(_solutions, "solutionsFinal");
+		// END DEBUG */
 		_selectedSolution = _solutions[0];
-		Debug.Log("Top Solution: W = " + _selectedSolution.totalWeight + ", L = " + _selectedSolution.path.Count);
-		/* DEBUG
-	   string output = "matches = [ ";
-	   foreach (MatchData match in _selectedSolution.matches)
-	   {
-		   output += "(" + match.orbType.ToString() + ", " + match.numOrbs.ToString() + ") ";
-	   }
-	   output += "]";
-	   Debug.Log(output);
-	   // END DEBUG */
+		//_selectedSolution.path = SimplifyPath(_selectedSolution.path, _selectedSolution.startOrbPos);
+		//* DEBUG
+		string output = "Selected Solution: weight = " + _selectedSolution.totalWeight + ", matches = [ ";
+		foreach (MatchData match in _selectedSolution.matches)
+		{
+			output += "(" + match.orbType.ToString() + ", " + match.numOrbs.ToString() + ") ";
+		}
+		output += "], start position = (" + _selectedSolution.startOrbPos.row + ", " + _selectedSolution.startOrbPos.col + ") path = [ ";
+		foreach (Direction dir in _selectedSolution.path)
+		{
+			output += dir.ToString() + " ";
+		}
+		output += "]";
+		Debug.Log(output);
+		// END DEBUG */
 	}
 
 	/// <summary>

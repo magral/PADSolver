@@ -1,12 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-public enum Direction{
-	Right,
-	Left,
-	Down,
-	Up
-}
 public class Sort : MonoBehaviour {
 
 
