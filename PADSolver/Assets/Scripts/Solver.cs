@@ -116,6 +116,22 @@ public class Solver : MonoBehaviour {
 		{
 			return "(W = " + totalWeight + ", M = " + matches.Count + ", S = " + startOrbPos.ToString() + ", P = " + path.Count + ")\n";
 		}
+
+		public string ToStringV()
+		{
+			string output = "(Weight = " + totalWeight + ", Matches(" + matches.Count + ") = [ ";
+			foreach (MatchData match in matches)
+			{
+				output += "(" + match.orbType.ToString() + ", " + match.numOrbs.ToString() + ") ";
+			}
+			output += "], Start Position = " + startOrbPos.ToString() + " Path(" + path.Count + ") = [ ";
+			foreach (Direction dir in path)
+			{
+				output += dir.ToString() + " ";
+			}
+			output += "]";
+			return (output);
+		}
 	};
 
 	//---------------------------------/
@@ -139,7 +155,7 @@ public class Solver : MonoBehaviour {
 	private float[] _orbWeights;
 	private int _rows = 5;
 	private int _cols = 6;
-	private int _maxLength = 40000;
+	private int _maxLength = 4000;
 
 	//-----------------/
 	/* Initialization */
@@ -461,7 +477,7 @@ public class Solver : MonoBehaviour {
 		}
 		_solutions.AddRange(newSolutions);
 		_solutions.Sort();
-		return _solutions.GetRange(0, MAX_NUM_SOLUTIONS); 
+		return _solutions; 
 	}
 
 	/// <summary>
@@ -561,24 +577,12 @@ public class Solver : MonoBehaviour {
 			_solutions = StepSolutions();
 		}
 		_solutions = SimplifySolutions(_solutions);
-		///* DEBUG
+		//* DEBUG
 		PrintSolutions(_solutions, "solutionsFinal");
 		// END DEBUG */
 		_selectedSolution = _solutions[0];
-		//_selectedSolution.path = SimplifyPath(_selectedSolution.path, _selectedSolution.startOrbPos);
 		//* DEBUG
-		string output = "Selected Solution: weight = " + _selectedSolution.totalWeight + ", matches = [ ";
-		foreach (MatchData match in _selectedSolution.matches)
-		{
-			output += "(" + match.orbType.ToString() + ", " + match.numOrbs.ToString() + ") ";
-		}
-		output += "], start position = (" + _selectedSolution.startOrbPos.row + ", " + _selectedSolution.startOrbPos.col + ") path = [ ";
-		foreach (Direction dir in _selectedSolution.path)
-		{
-			output += dir.ToString() + " ";
-		}
-		output += "]";
-		Debug.Log(output);
+		Debug.Log(_selectedSolution.ToStringV());
 		// END DEBUG */
 	}
 
@@ -632,6 +636,11 @@ public class Solver : MonoBehaviour {
 	/// </summary>
 	public void ShowFinalBoard()
 	{
+		if (_selectedSolution == null)
+		{
+			Debug.Log("No solution given.");
+			return;
+		}
 		_board = (OrbType[,])_selectedSolution.solutionBoard.Clone();
 		ShowBoard();
 	}
