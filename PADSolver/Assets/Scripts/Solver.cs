@@ -801,4 +801,9 @@ public class Solver : MonoBehaviour {
 	{
 		_orbWeights[0] = float.Parse(weight);
 	}
+
+	public void SetMaxLength(float length)
+	{
+		_maxLength = (int)length;
+	}
 }
