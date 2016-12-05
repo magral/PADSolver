@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 
 public enum Direction
@@ -10,17 +11,7 @@ public enum Direction
 }
 
 public class Solver : MonoBehaviour {
-
-	[SerializeField]
-	private GameObject _arrow;
-	[SerializeField]
-	private GameObject _arrowDown;
-	[SerializeField]
-	private GameObject _arrowUp;
-	[SerializeField]
-	private GameObject _arrowLeft;
-	[SerializeField]
-	private Transform _arrowRoot;
+	
 	/* Coordinate class - holds row and column information */
 	public class Coords
 	{
@@ -49,7 +40,7 @@ public class Solver : MonoBehaviour {
 		// String format
 		public override string ToString()
 		{
-			 return "(" + row + ", " + col + ")";
+			 return "(" + col + ", " + row + ")";
 		}
 	}
 
@@ -161,6 +152,18 @@ public class Solver : MonoBehaviour {
 			output += "])";
 			return (output);
 		}
+
+		// String format (button version)
+		public string ToStringB()
+		{
+			string output = "W = " + totalWeight + ", C = " + matches.Count + ", S = " + startOrbPos.ToString() + ", P = " + path.Count + "\n[ ";
+			foreach (MatchData match in matches)
+			{
+				output += match.ToString() + " ";
+			}
+			output += "]";
+			return output;
+		}
 	};
 
 	//---------------------------------/
@@ -169,32 +172,57 @@ public class Solver : MonoBehaviour {
 	public const int ORB_SIZE = 80;
 	public const float ORB_MULTIPLIER = 0.25f;
 	public const float COMBO_MULTIPLIER = 0.25f;
-	public const int MAX_NUM_SOLUTIONS = 5 * 6 * 4;
+	public const int MAX_NUM_SOLUTIONS = 30;
 
+	[Header("Path Variables")]
 	[SerializeField]
-	private Transform root;
+	private Transform _pathRoot;
+	[SerializeField]
+	private GameObject _arrowRight;
+	[SerializeField]
+	private GameObject _arrowDown;
+	[SerializeField]
+	private GameObject _arrowUp;
+	[SerializeField]
+	private GameObject _arrowLeft;
+	[SerializeField]
+	private GameObject _start;
+	[SerializeField]
+	private GameObject _end;
+	[Header("Board Variables")]
+	[SerializeField]
+	private Transform boardRoot;
+	[Header("Solutions Variables")]
+	[SerializeField]
+	private Transform _solutionsRoot;
+	[SerializeField]
+	private GameObject _solutionChoice;
+
+	public static Solver Instance;
 
 	//--------------------/
 	/* Private Variables */
 	//--------------------/
-	private List<SolutionData> _solutions;
-	private SolutionData _selectedSolution;
-	private OrbType[,] _board;
-	private OrbType[,] _initialBoard;
-	private float[] _orbWeights;
 	private int _rows = 5;
 	private int _cols = 6;
 	private int _maxLength = 4000;
+	private OrbType[,] _board;
+	private OrbType[,] _initialBoard;
+	private float[] _orbWeights;
+	private List<SolutionData> _solutions;
+	private SolutionData _selectedSolution;
 
 	//-----------------/
 	/* Initialization */
 	//-----------------/
 	void Awake()
 	{
-		_solutions = new List<SolutionData>();
 		_board = new OrbType[_rows, _cols];
 		_initialBoard = new OrbType[_rows, _cols];
 		_orbWeights = new float[6] { 1, 1, 1, 1, 1, 0.3f };
+		_solutions = new List<SolutionData>();
+		_selectedSolution = new SolutionData(_board);
+		Instance = this;
 	}
 
 	//----------------------/
@@ -238,7 +266,7 @@ public class Solver : MonoBehaviour {
 	{
 		for (int i = 0, r = 0; r < _rows; r++)
 			for (int c = 0; c < _cols; c++, i++)
-				_board[r, c] = root.GetChild(i).GetComponent<ScrollImage>().State;
+				_board[r, c] = boardRoot.GetChild(i).GetComponent<ScrollImage>().State;
 	}
 
 	/// <summary>
@@ -501,11 +529,11 @@ public class Solver : MonoBehaviour {
 	/// <summary>
 	/// Shows the board on the front-end side
 	/// </summary>
-	void ShowBoard()
+	void ShowBoard(OrbType[,] board)
 	{
 		for (int i = 0, r = 0; r < _rows; r++)
 			for (int c = 0; c < _cols; c++, i++)
-				root.GetChild(i).GetComponent<ScrollImage>().SetOrb(_board[r,c]);
+				boardRoot.GetChild(i).GetComponent<ScrollImage>().SetOrb(board[r,c]);
 	}
 
 	/// <summary>
@@ -531,7 +559,7 @@ public class Solver : MonoBehaviour {
 		return simplifiedSolutions;
 	}
 
-	//-------------------/
+	//-------------------/ 
 	/* Public Functions */
 	//-------------------/
 	/// <summary>
@@ -555,14 +583,15 @@ public class Solver : MonoBehaviour {
 			_solutions = StepSolutions();
 		}
 		_solutions = SimplifySolutions(_solutions);
-		//* DEBUG
-		PrintSolutions(_solutions, "solutionsFinal");
-		// END DEBUG */
-		_selectedSolution = _solutions[0];
-		//* DEBUG
-		Debug.Log(_selectedSolution.ToStringV());
-		// END DEBUG */
-		ShowPath();
+		PrintSolutions(_solutions, "solutionsFinal"); //Debug
+		for (int i = 0; i < MAX_NUM_SOLUTIONS; i++) 
+		{
+			GameObject solutionChoice = Instantiate(_solutionChoice) as GameObject;
+			solutionChoice.transform.SetParent(_solutionsRoot);
+			solutionChoice.GetComponent<RectTransform>().anchoredPosition = new Vector3(0, -36 - i * 65, 0);
+			solutionChoice.GetComponentInChildren<Text>().text = (i+1) + ". " + _solutions[i].ToStringB();
+			solutionChoice.GetComponent<SolutionButton>().SetIndex(i);
+		}
 	}
 
 	/// <summary>
@@ -576,7 +605,7 @@ public class Solver : MonoBehaviour {
 				for (int c = 0; c < _cols; c++, i++)
 				{
 					OrbType randomOrb = (OrbType)Random.Range(1, 7);
-					root.GetChild(i).GetComponent<ScrollImage>().SetOrb(randomOrb);
+					boardRoot.GetChild(i).GetComponent<ScrollImage>().SetOrb(randomOrb);
 					_board[r, c] = randomOrb;
 					_initialBoard[r, c] = randomOrb;
 				}
@@ -591,7 +620,7 @@ public class Solver : MonoBehaviour {
 		for (int i = 0, r = 0; r < _rows; r++)
 			for (int c = 0; c < _cols; c++, i++)
 			{
-				root.GetChild(i).GetComponent<ScrollImage>().SetOrb(OrbType.None);
+				boardRoot.GetChild(i).GetComponent<ScrollImage>().SetOrb(OrbType.None);
 				_board[r, c] = OrbType.None;
 			}
 	}
@@ -605,7 +634,7 @@ public class Solver : MonoBehaviour {
 			for (int c = 0; c < _cols; c++, i++)
 			{
 				OrbType oldOrb = _initialBoard[r, c];
-				root.GetChild(i).GetComponent<ScrollImage>().SetOrb(oldOrb);
+				boardRoot.GetChild(i).GetComponent<ScrollImage>().SetOrb(oldOrb);
 				_board[r, c] = oldOrb;
 			}
 	}
@@ -620,8 +649,8 @@ public class Solver : MonoBehaviour {
 			Debug.Log("No solution given.");
 			return;
 		}
-		_board = (OrbType[,])_selectedSolution.solutionBoard.Clone();
-		ShowBoard();
+		TogglePath("false");
+		ShowBoard((OrbType[,])_selectedSolution.solutionBoard.Clone());
 	}
 
 	/// <summary>
@@ -629,6 +658,7 @@ public class Solver : MonoBehaviour {
 	/// </summary>
 	public void DropMatches()
 	{
+		TogglePath("false");
 		GetBoard();
 		OrbType[,] currBoard = (OrbType[,])_board.Clone();
 		do
@@ -641,15 +671,15 @@ public class Solver : MonoBehaviour {
 		for (int r = 0; r < _rows; r++)
 			for (int c =0; c < _cols; c++)
 				_board = (OrbType[,])currBoard.Clone();
-		ShowBoard();
+		ShowBoard(_board);
 	}
 
 	/// <summary>
-	/// Returns a copy of the selection solution's path
+	/// Sets the selection solution to the solution at index i
 	/// </summary>
-	public List<Direction> GetSelectedPath()
+	public void SetSolution(int i)
 	{
-		return new List<Direction>(_selectedSolution.path);
+		_selectedSolution = _solutions[i];
 	}
 
 	/// <summary>
@@ -657,45 +687,71 @@ public class Solver : MonoBehaviour {
 	/// </summary>
 	public void ShowPath()
 	{
+
 		if(_selectedSolution != null)
 		{
-			for(int i = 0; i < _arrowRoot.childCount; i++)
+			//* DEBUG
+			Debug.Log(_selectedSolution.ToStringV());
+			// END DEBUG */
+			for (int i = 0; i < _pathRoot.childCount; i++)
 			{
-				Destroy(_arrowRoot.GetChild(i).gameObject);
+				Destroy(_pathRoot.GetChild(i).gameObject);
 			}
 			Vector3 spawnPosition = new Vector3( (45.5f + _selectedSolution.startOrbPos.col * 75 + _selectedSolution.startOrbPos.col * 5), (-42.5f - _selectedSolution.startOrbPos.row * 75 - _selectedSolution.startOrbPos.row * 5), -1);
-			Debug.Log(_selectedSolution.startOrbPos.row);
-			Debug.Log(_selectedSolution.startOrbPos.col);
+			Vector3 startPosition = spawnPosition;
 			for (int i = 0; i < _selectedSolution.path.Count; i++)
 			{
 				switch (_selectedSolution.path[i])
 				{
 					case Direction.Left:
 						GameObject arrowLeft = Instantiate(_arrowLeft) as GameObject;
-						arrowLeft.transform.SetParent(_arrowRoot);
+						arrowLeft.transform.SetParent(_pathRoot);
 						arrowLeft.GetComponent<RectTransform>().anchoredPosition = spawnPosition;
 						spawnPosition.x -= 80;
 						break;
 					case Direction.Right:
-						GameObject arrowRight = Instantiate(_arrow) as GameObject;
-						arrowRight.transform.SetParent(_arrowRoot);
+						GameObject arrowRight = Instantiate(_arrowRight) as GameObject;
+						arrowRight.transform.SetParent(_pathRoot);
 						arrowRight.GetComponent<RectTransform>().anchoredPosition = spawnPosition;
 						arrowRight.transform.localRotation = Quaternion.identity;
 						spawnPosition.x += 80;
 						break;
 					case Direction.Down:
 						GameObject arrowDown = Instantiate(_arrowDown) as GameObject;
-						arrowDown.transform.SetParent(_arrowRoot);
+						arrowDown.transform.SetParent(_pathRoot);
 						arrowDown.GetComponent<RectTransform>().anchoredPosition = spawnPosition;
 						spawnPosition.y -= 80;
 						break;
 					case Direction.Up:
 						GameObject arrowUp = Instantiate(_arrowUp) as GameObject;
-						arrowUp.transform.SetParent(_arrowRoot);
+						arrowUp.transform.SetParent(_pathRoot);
 						arrowUp.GetComponent<RectTransform>().anchoredPosition = spawnPosition;
 						spawnPosition.y += 80;
 						break;
 				}
+			}
+			GameObject start = Instantiate(_start) as GameObject;
+			start.transform.SetParent(_pathRoot);
+			start.GetComponent<RectTransform>().anchoredPosition = startPosition;
+			GameObject end = Instantiate(_end) as GameObject;
+			end.transform.SetParent(_pathRoot);
+			end.GetComponent<RectTransform>().anchoredPosition = spawnPosition;
+		}
+	}
+
+	/// <summary>
+	/// Toggles the visibility of the path depending on argument
+	/// </summary>
+	/// <param name="value">"true": shows path, "false": hides path</param>
+	public void TogglePath(string value = "none")
+	{
+		if (_pathRoot.childCount > 0)
+		{
+			for (int i = 0; i < _pathRoot.childCount; i++)
+			{
+				if (value.Equals("true")) { _pathRoot.GetChild(i).gameObject.SetActive(true); }
+				else if (value.Equals("false")) { _pathRoot.GetChild(i).gameObject.SetActive(false); }
+				else { _pathRoot.GetChild(i).gameObject.SetActive(!_pathRoot.GetChild(i).gameObject.activeSelf); }
 			}
 		}
 	}

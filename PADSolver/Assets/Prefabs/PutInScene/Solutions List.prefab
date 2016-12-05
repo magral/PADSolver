@@ -23,7 +23,7 @@ GameObject:
   - 222: {fileID: 222000010423178002}
   - 114: {fileID: 114000011037465130}
   m_Layer: 5
-  m_Name: Scroll View
+  m_Name: Solutions List
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -444,10 +444,10 @@ MonoBehaviour:
   m_Interactable: 1
   m_TargetGraphic: {fileID: 114000010943513934}
   m_HandleRect: {fileID: 224000010622480582}
-  m_Direction: 3
-  m_Value: 0
-  m_Size: 1
-  m_NumberOfSteps: 0
+  m_Direction: 2
+  m_Value: 1
+  m_Size: 0.2834844
+  m_NumberOfSteps: 1
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -492,13 +492,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Content: {fileID: 224000010294174978}
-  m_Horizontal: 1
+  m_Horizontal: 0
   m_Vertical: 1
-  m_MovementType: 1
+  m_MovementType: 2
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 1
+  m_ScrollSensitivity: 30
   m_Viewport: {fileID: 224000014016998030}
   m_HorizontalScrollbar: {fileID: 114000012690017778}
   m_VerticalScrollbar: {fileID: 114000013456638230}
@@ -566,10 +566,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 224000014016998030}
   m_RootOrder: 0
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 300}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -166.5, y: 281.5}
+  m_SizeDelta: {x: 330, y: 1986}
   m_Pivot: {x: 0, y: 1}
 --- !u!224 &224000010622480582
 RectTransform:
@@ -669,7 +669,7 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010504697640}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -682,7 +682,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -173, y: -16.75}
+  m_AnchoredPosition: {x: -175, y: -17}
   m_SizeDelta: {x: 350, y: -34}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224000013218160682
@@ -722,7 +722,7 @@ RectTransform:
   m_AnchorMax: {x: 1, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 0}
-  m_Pivot: {x: 1, y: 0}
+  m_Pivot: {x: 1, y: 1}
 --- !u!224 &224000014016998030
 RectTransform:
   m_ObjectHideFlags: 1

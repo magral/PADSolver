@@ -877,7 +877,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6761dd09c7c1ed429d3553bd6b20c8c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  root: {fileID: 224000013253051370}
+  _pathRoot: {fileID: 0}
+  _arrowRight: {fileID: 0}
+  _arrowDown: {fileID: 1000010995584800, guid: c70ea7dc675c5314f82922d3ff625064, type: 2}
+  _arrowUp: {fileID: 1000013072824972, guid: bfc9d07c3f767d54f83ec844b4b499e6, type: 2}
+  _arrowLeft: {fileID: 1000012517421276, guid: 990b4d9fbcfae7347bd812148f7feece, type: 2}
+  _start: {fileID: 1000010987669286, guid: 2a472450d8746a544afac306c55ee7f7, type: 2}
+  _end: {fileID: 1000012343066992, guid: 0a0d9bb74dea2c44da289f901cbffcf0, type: 2}
+  boardRoot: {fileID: 0}
+  _solutionsRoot: {fileID: 0}
+  _solutionChoice: {fileID: 0}
 --- !u!114 &114000010867063276
 MonoBehaviour:
   m_ObjectHideFlags: 1
