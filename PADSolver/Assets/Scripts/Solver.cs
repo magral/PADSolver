@@ -11,6 +11,16 @@ public enum Direction
 
 public class Solver : MonoBehaviour {
 
+	[SerializeField]
+	private GameObject _arrow;
+	[SerializeField]
+	private GameObject _arrowDown;
+	[SerializeField]
+	private GameObject _arrowUp;
+	[SerializeField]
+	private GameObject _arrowLeft;
+	[SerializeField]
+	private Transform _arrowRoot;
 	/* Coordinate class - holds row and column information */
 	public class Coords
 	{
@@ -584,6 +594,7 @@ public class Solver : MonoBehaviour {
 		//* DEBUG
 		Debug.Log(_selectedSolution.ToStringV());
 		// END DEBUG */
+		ShowPath();
 	}
 
 	/// <summary>
@@ -663,5 +674,53 @@ public class Solver : MonoBehaviour {
 			for (int c =0; c < _cols; c++)
 				_board = (OrbType[,])currBoard.Clone();
 		ShowBoard();
+	}
+
+	/// <summary>
+	/// Show path on board
+	/// </summary>
+	public void ShowPath()
+	{
+		if(_selectedSolution != null)
+		{
+			for(int i = 0; i < _arrowRoot.childCount; i++)
+			{
+				Destroy(_arrowRoot.GetChild(i).gameObject);
+			}
+			Vector3 spawnPosition = new Vector3( (45.5f + _selectedSolution.startOrbPos.col * 75 + _selectedSolution.startOrbPos.col * 5), (-42.5f - _selectedSolution.startOrbPos.row * 75 - _selectedSolution.startOrbPos.row * 5), -1);
+			Debug.Log(_selectedSolution.startOrbPos.row);
+			Debug.Log(_selectedSolution.startOrbPos.col);
+			for (int i = 0; i < _selectedSolution.path.Count; i++)
+			{
+				switch (_selectedSolution.path[i])
+				{
+					case Direction.Left:
+						GameObject arrowLeft = Instantiate(_arrowLeft) as GameObject;
+						arrowLeft.transform.SetParent(_arrowRoot);
+						arrowLeft.GetComponent<RectTransform>().anchoredPosition = spawnPosition;
+						spawnPosition.x -= 80;
+						break;
+					case Direction.Right:
+						GameObject arrowRight = Instantiate(_arrow) as GameObject;
+						arrowRight.transform.SetParent(_arrowRoot);
+						arrowRight.GetComponent<RectTransform>().anchoredPosition = spawnPosition;
+						arrowRight.transform.localRotation = Quaternion.identity;
+						spawnPosition.x += 80;
+						break;
+					case Direction.Down:
+						GameObject arrowDown = Instantiate(_arrowDown) as GameObject;
+						arrowDown.transform.SetParent(_arrowRoot);
+						arrowDown.GetComponent<RectTransform>().anchoredPosition = spawnPosition;
+						spawnPosition.y -= 80;
+						break;
+					case Direction.Up:
+						GameObject arrowUp = Instantiate(_arrowUp) as GameObject;
+						arrowUp.transform.SetParent(_arrowRoot);
+						arrowUp.GetComponent<RectTransform>().anchoredPosition = spawnPosition;
+						spawnPosition.y += 80;
+						break;
+				}
+			}
+		}
 	}
 }
