@@ -751,7 +751,8 @@ public class Solver : MonoBehaviour {
 						spawnPosition.y += 80;
 						break;
 				}
-				if (i % 2 == 0) { arrow.GetComponent<Image>().color = Color.black; }
+				if (i % 3 == 0) { arrow.GetComponent<Image>().color = Color.black; }
+				else if (i % 3 == 1) { arrow.GetComponent<Image>().color = Color.gray; }
 				else { arrow.GetComponent<Image>().color = Color.white; }
 			}
 			GameObject start = Instantiate(_start) as GameObject;
