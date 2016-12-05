@@ -205,7 +205,7 @@ public class Solver : MonoBehaviour {
 	//--------------------/
 	private int _rows = 5;
 	private int _cols = 6;
-	private int _maxLength = 4000;
+	private int _maxLength = 24;
 	private OrbType[,] _board;
 	private OrbType[,] _initialBoard;
 	private float[] _orbWeights;
@@ -511,7 +511,7 @@ public class Solver : MonoBehaviour {
 		List<SolutionData> newSolutions = new List<SolutionData>();
 		foreach (SolutionData solution in _solutions)
 		{
-			if (solution.isChecked) { break; }
+			if (solution.isChecked) { continue; }
 			for (int dir = 0; dir < 4; dir++)
 			{
 				if(!CanMoveOrb(solution,(Direction)dir)) { continue; }
@@ -523,7 +523,7 @@ public class Solver : MonoBehaviour {
 		}
 		_solutions.AddRange(newSolutions);
 		_solutions.Sort();
-		return _solutions; 
+		return _solutions.GetRange(0, (_solutions.Count < MAX_NUM_SOLUTIONS*_maxLength) ? _solutions.Count : MAX_NUM_SOLUTIONS*_maxLength); 
 	}
 
 	/// <summary>
@@ -559,6 +559,9 @@ public class Solver : MonoBehaviour {
 		return simplifiedSolutions;
 	}
 
+	/// <summary>
+	/// Clears the Solutions List of all choices
+	/// </summary>
 	void ClearSolutionsList()
 	{
 		if (_solutionsRoot.childCount > 0)
@@ -592,6 +595,7 @@ public class Solver : MonoBehaviour {
 		{
 			step++;
 			_solutions = StepSolutions();
+			Debug.Log(step + ", " + _solutions.Count);
 		}
 		_solutions = SimplifySolutions(_solutions);
 		PrintSolutions(_solutions, "solutionsFinal"); //Debug
