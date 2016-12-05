@@ -772,4 +772,29 @@ public class Solver : MonoBehaviour {
 			}
 		}
 	}
+
+	public void ChangeFireWeight(string weight)
+	{
+		_orbWeights[0] = float.Parse(weight);
+	}
+	public void ChangeWaterWeight(string weight)
+	{
+		_orbWeights[0] = float.Parse(weight);
+	}
+	public void ChangeWoodWeight(string weight)
+	{
+		_orbWeights[0] = float.Parse(weight);
+	}
+	public void ChangeLightWeight(string weight)
+	{
+		_orbWeights[0] = float.Parse(weight);
+	}
+	public void ChangeDarkWeight(string weight)
+	{
+		_orbWeights[0] = float.Parse(weight);
+	}
+	public void ChangeHealWeight(string weight)
+	{
+		_orbWeights[0] = float.Parse(weight);
+	}
 }

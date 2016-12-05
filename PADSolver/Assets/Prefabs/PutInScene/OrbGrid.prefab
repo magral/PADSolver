@@ -878,15 +878,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _pathRoot: {fileID: 0}
-  _arrowRight: {fileID: 0}
+  _arrowRight: {fileID: 1000013165811646, guid: 0bf935eaed843c143a5706891b0e3002,
+    type: 2}
   _arrowDown: {fileID: 1000010995584800, guid: c70ea7dc675c5314f82922d3ff625064, type: 2}
   _arrowUp: {fileID: 1000013072824972, guid: bfc9d07c3f767d54f83ec844b4b499e6, type: 2}
   _arrowLeft: {fileID: 1000012517421276, guid: 990b4d9fbcfae7347bd812148f7feece, type: 2}
   _start: {fileID: 1000010987669286, guid: 2a472450d8746a544afac306c55ee7f7, type: 2}
   _end: {fileID: 1000012343066992, guid: 0a0d9bb74dea2c44da289f901cbffcf0, type: 2}
-  boardRoot: {fileID: 0}
+  boardRoot: {fileID: 224000013253051370}
   _solutionsRoot: {fileID: 0}
-  _solutionChoice: {fileID: 0}
+  _solutionChoice: {fileID: 1000010659494592, guid: 4bacde6d4cb856c42bf551334074f2c2,
+    type: 2}
 --- !u!114 &114000010867063276
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2662,7 +2664,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 245.5, y: -202.5}
+  m_AnchoredPosition: {x: 260, y: -202.5}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224000013498073956
