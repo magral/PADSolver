@@ -101,9 +101,11 @@ public class ScrollImage : MonoBehaviour, IPointerClickHandler {
 	public void SetOrb(OrbType newImage)
 	{
 		currentOrb = newImage;
+		index = (int)newImage;
 		switch (newImage)
 		{
 			case OrbType.None:
+			case OrbType.Undefined:
 				render.sprite = noOrb;
 				break;
 			case OrbType.Red:
