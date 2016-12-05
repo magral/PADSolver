@@ -722,34 +722,37 @@ public class Solver : MonoBehaviour {
 			Vector3 startPosition = spawnPosition;
 			for (int i = 0; i < _selectedSolution.path.Count; i++)
 			{
+				GameObject arrow = null;
 				switch (_selectedSolution.path[i])
 				{
 					case Direction.Left:
-						GameObject arrowLeft = Instantiate(_arrowLeft) as GameObject;
-						arrowLeft.transform.SetParent(_pathRoot);
-						arrowLeft.GetComponent<RectTransform>().anchoredPosition = spawnPosition;
+						arrow = Instantiate(_arrowLeft) as GameObject;
+						arrow.transform.SetParent(_pathRoot);
+						arrow.GetComponent<RectTransform>().anchoredPosition = spawnPosition;
 						spawnPosition.x -= 80;
 						break;
 					case Direction.Right:
-						GameObject arrowRight = Instantiate(_arrowRight) as GameObject;
-						arrowRight.transform.SetParent(_pathRoot);
-						arrowRight.GetComponent<RectTransform>().anchoredPosition = spawnPosition;
-						arrowRight.transform.localRotation = Quaternion.identity;
+						arrow = Instantiate(_arrowRight) as GameObject;
+						arrow.transform.SetParent(_pathRoot);
+						arrow.GetComponent<RectTransform>().anchoredPosition = spawnPosition;
+						arrow.transform.localRotation = Quaternion.identity;
 						spawnPosition.x += 80;
 						break;
 					case Direction.Down:
-						GameObject arrowDown = Instantiate(_arrowDown) as GameObject;
-						arrowDown.transform.SetParent(_pathRoot);
-						arrowDown.GetComponent<RectTransform>().anchoredPosition = spawnPosition;
+						arrow = Instantiate(_arrowDown) as GameObject;
+						arrow.transform.SetParent(_pathRoot);
+						arrow.GetComponent<RectTransform>().anchoredPosition = spawnPosition;
 						spawnPosition.y -= 80;
 						break;
 					case Direction.Up:
-						GameObject arrowUp = Instantiate(_arrowUp) as GameObject;
-						arrowUp.transform.SetParent(_pathRoot);
-						arrowUp.GetComponent<RectTransform>().anchoredPosition = spawnPosition;
+						arrow = Instantiate(_arrowUp) as GameObject;
+						arrow.transform.SetParent(_pathRoot);
+						arrow.GetComponent<RectTransform>().anchoredPosition = spawnPosition;
 						spawnPosition.y += 80;
 						break;
 				}
+				if (i % 2 == 0) { arrow.GetComponent<Image>().color = Color.black; }
+				else { arrow.GetComponent<Image>().color = Color.white; }
 			}
 			GameObject start = Instantiate(_start) as GameObject;
 			start.transform.SetParent(_pathRoot);
