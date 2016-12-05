@@ -156,7 +156,7 @@ public class Solver : MonoBehaviour {
 		// String format (button version)
 		public string ToStringB()
 		{
-			string output = "W = " + totalWeight + ", C = " + matches.Count + ", S = " + startOrbPos.ToString() + ", P = " + path.Count + "\n[ ";
+			string output = "W = " + totalWeight.ToString("F2") + ", C = " + matches.Count + ", S = " + startOrbPos.ToString() + ", P = " + path.Count + "\n[ ";
 			foreach (MatchData match in matches)
 			{
 				output += match.ToString() + " ";
@@ -221,7 +221,7 @@ public class Solver : MonoBehaviour {
 		_initialBoard = new OrbType[_rows, _cols];
 		_orbWeights = new float[6] { 1, 1, 1, 1, 1, 0.3f };
 		_solutions = new List<SolutionData>();
-		_selectedSolution = new SolutionData(_board);
+		_selectedSolution = null;
 		Instance = this;
 	}
 
@@ -559,6 +559,17 @@ public class Solver : MonoBehaviour {
 		return simplifiedSolutions;
 	}
 
+	void ClearSolutionsList()
+	{
+		if (_solutionsRoot.childCount > 0)
+		{
+			for (int i = 0; i < _solutionsRoot.childCount; i++)
+			{
+				Destroy(_solutionsRoot.GetChild(i).gameObject);
+			}
+		}
+	}
+
 	//-------------------/ 
 	/* Public Functions */
 	//-------------------/
@@ -584,11 +595,12 @@ public class Solver : MonoBehaviour {
 		}
 		_solutions = SimplifySolutions(_solutions);
 		PrintSolutions(_solutions, "solutionsFinal"); //Debug
+		ClearSolutionsList();
 		for (int i = 0; i < MAX_NUM_SOLUTIONS; i++) 
 		{
 			GameObject solutionChoice = Instantiate(_solutionChoice) as GameObject;
 			solutionChoice.transform.SetParent(_solutionsRoot);
-			solutionChoice.GetComponent<RectTransform>().anchoredPosition = new Vector3(0, -36 - i * 65, 0);
+			solutionChoice.GetComponent<RectTransform>().anchoredPosition = new Vector3(0, -40 - i * 60, 0);
 			solutionChoice.GetComponentInChildren<Text>().text = (i+1) + ". " + _solutions[i].ToStringB();
 			solutionChoice.GetComponent<SolutionButton>().SetIndex(i);
 		}
@@ -599,6 +611,8 @@ public class Solver : MonoBehaviour {
 	/// </summary>
 	public void RandomizeBoard()
 	{
+		TogglePath("false");
+		ClearSolutionsList();
 		do
 		{
 			for (int i = 0, r = 0; r < _rows; r++)
@@ -617,6 +631,9 @@ public class Solver : MonoBehaviour {
 	/// </summary>
 	public void ClearBoard()
 	{
+		TogglePath("false");
+		ClearSolutionsList();
+		_selectedSolution = null;
 		for (int i = 0, r = 0; r < _rows; r++)
 			for (int c = 0; c < _cols; c++, i++)
 			{
@@ -630,6 +647,7 @@ public class Solver : MonoBehaviour {
 	/// </summary>
 	public void ResetBoard()
 	{
+		TogglePath("false");
 		for (int i = 0, r = 0; r < _rows; r++)
 			for (int c = 0; c < _cols; c++, i++)
 			{
@@ -687,7 +705,6 @@ public class Solver : MonoBehaviour {
 	/// </summary>
 	public void ShowPath()
 	{
-
 		if(_selectedSolution != null)
 		{
 			//* DEBUG
