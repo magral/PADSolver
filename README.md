@@ -1,8 +1,10 @@
-## PADSolver
+##PADSolver
 #Project by Johnny Chen and Leah Magrane
+
 #What is PADSolver?
 PADSolver is a puzzle board solver for the mobile game Puzzle & Dragons.
-The application can be used to find the optimal path the player should take to reach the most number of combos. The player can also adjust certain parameters for their solution such as the length of the optimal path and adjusting what weight each orb has in the solution.
+The application can be used to find the optimal path the player should take to reach the most number of combos.
+The player can also adjust certain parameters for their solution such as the length of the optimal path and adjusting what weight each orb has in the solution.
 PADSolver also gives the top 30 results so the user may select whichever solution they find best.
 
 #Usage
