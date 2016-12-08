@@ -1,5 +1,5 @@
-#PADSolver
-###Project by Johnny Chen and Leah Magrane
+#PADSolver 
+Project by Johnny Chen and Leah Magrane
 
 ##What is PADSolver?
 PADSolver is a puzzle board solver for the mobile game Puzzle & Dragons.
